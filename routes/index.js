@@ -2,6 +2,7 @@ var express = require('express');
 var router = express.Router();
 const multer = require('multer');
 const path = require('path');
+const nvt = require('node-virustotal');
 
 const storage = multer.diskStorage({
   destination: './files',
@@ -22,9 +23,7 @@ router.post('/upload', upload.single('myFile'), function (req, res, nex) {
   console.log(req.file.filename);
   const fs = require('fs');
   const VirusTotalApi = require('virustotal-api');
-  const virusTotal = new VirusTotalApi(
-    '7ddc42798f01a74fb003f04735965951370034e6f40252b5ddfc664eca69ea65'
-  );
+  const virusTotal = new VirusTotalApi(process.env.VIRUS_TOTAL_API);
   fs.readFile('./files/' + req.file.filename, (err, data) => {
     if (err) {
       console.log(`Cannot read file. ${err}`);
@@ -41,6 +40,21 @@ router.post('/upload', upload.single('myFile'), function (req, res, nex) {
         .catch((err) => console.log(`Scan failed. ${err}`));
     }
   });
+});
+
+router.post('/url/:website', function (req, res, next) {
+  var url = req.params.website;
+  const defaultTimedInstance = nvt.makeAPI();
+  const theSameKey = defaultTimedInstance.setKey(process.env.VIRUS_TOTAL_API);
+  const theSameObject = defaultTimedInstance.domainLookup(
+    url,
+    function (err, response) {
+      if (err) {
+        res.send(err);
+      }
+      res.send(response);
+    }
+  );
 });
 
 module.exports = router;
