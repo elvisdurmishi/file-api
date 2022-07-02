@@ -1,60 +1,75 @@
 var express = require('express');
 var router = express.Router();
 const multer = require('multer');
-const path = require('path');
-const nvt = require('node-virustotal');
+require('dotenv').config()
+const axios = require('axios');
+let fs = require('fs');
+let FormData = require('form-data');
 
 const storage = multer.diskStorage({
-  destination: './files',
-  filename: (req, file, cb) => {
-    return cb(null, `${file.originalname}`);
-  },
+    destination: './files',
+    filename: (req, file, cb) => {
+        return cb(null, `${file.originalname}`);
+    },
 });
 
 const upload = multer({
-  storage: storage,
+    storage: storage,
 });
 
 router.get('/', function (req, res, next) {
-  res.render('index', { title: 'Express' });
+    res.render('index', {title: 'Express'});
 });
 
-router.post('/upload', upload.single('myFile'), function (req, res, nex) {
-  console.log(req.file.filename);
-  const fs = require('fs');
-  const VirusTotalApi = require('virustotal-api');
-  const virusTotal = new VirusTotalApi(process.env.VIRUS_TOTAL_API);
-  fs.readFile('./files/' + req.file.filename, (err, data) => {
-    if (err) {
-      console.log(`Cannot read file. ${err}`);
-    } else {
-      virusTotal
-        .fileScan(data, req.file.filename)
-        .then((response) => {
-          let resource = response.resource;
-          virusTotal.fileReport(resource).then((result) => {
-            console.log(result);
-            res.json(result);
-          });
+router.post('/upload', upload.single('file'), function (req, res, nex) {
+    let form = FormData();
+    form.append("file", fs.createReadStream(`files/${req.file.filename}`));
+
+    axios
+        .post(`https://www.virustotal.com/api/v3/files`, form, {
+            headers: {
+                "x-apikey": process.env.NODE_APP_VIRUS_TOTAL_API,
+                "Content-Type": "multipart/form-data"
+            }
         })
-        .catch((err) => console.log(`Scan failed. ${err}`));
-    }
-  });
+        .then(result => {
+            res.send(result.data);
+        })
+        .catch(error => {
+            res.send(error.data);
+        });
 });
 
-router.post('/url/:website', function (req, res, next) {
-  var url = req.params.website;
-  const defaultTimedInstance = nvt.makeAPI();
-  const theSameKey = defaultTimedInstance.setKey(process.env.VIRUS_TOTAL_API);
-  const theSameObject = defaultTimedInstance.domainLookup(
-    url,
-    function (err, response) {
-      if (err) {
-        res.send(err);
-      }
-      res.send(response);
-    }
-  );
+router.post('/file/analyse', function (req, res, next) {
+    var id = req.body.file_id;
+    axios
+        .get(`https://www.virustotal.com/api/v3/analyses/${id}`, {
+            headers: {
+                "x-apikey": process.env.NODE_APP_VIRUS_TOTAL_API,
+            }
+        })
+        .then(result => {
+            res.send(result.data);
+        })
+        .catch(error => {
+            res.send(error.data);
+        });
+})
+
+router.post('/url', function (req, res, next) {
+    var url = req.body.url;
+    axios
+        .get(`https://www.virustotal.com/api/v3/domains/${url}`, {
+            headers: {
+                "x-apikey": process.env.NODE_APP_VIRUS_TOTAL_API,
+            }
+        })
+        .then(result => {
+            res.send(result.data);
+        })
+        .catch(error => {
+            res.send(error.data);
+        });
 });
 
 module.exports = router;
