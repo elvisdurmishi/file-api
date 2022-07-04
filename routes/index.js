@@ -33,10 +33,10 @@ router.post('/upload', upload.single('file'), function (req, res, nex) {
             }
         })
         .then(result => {
-            res.send(result.data);
+            res.send(result.data.data);
         })
         .catch(error => {
-            res.send(error.data);
+            res.send(error.data.data);
         });
 });
 
@@ -49,10 +49,10 @@ router.post('/file/analyse', function (req, res, next) {
             }
         })
         .then(result => {
-            res.send(result.data);
+            res.send(result.data.data);
         })
         .catch(error => {
-            res.send(error.data);
+            res.send(error.data.data);
         });
 })
 
@@ -65,10 +65,10 @@ router.post('/url', function (req, res, next) {
             }
         })
         .then(result => {
-            res.send(result.data);
+            res.send(result.data.data);
         })
         .catch(error => {
-            res.send(error.data);
+            res.send(error.data.data);
         });
 });
 
