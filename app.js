@@ -9,17 +9,19 @@ let indexRouter = require('./routes/index');
 
 let app = express();
 
-const whitelist = ['http://localhost:3000', 'https://virusfreee.netlify.app'];
-
-const corsOptions = {
-  origin: function (origin, callback) {
-    if (!origin || whitelist.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
+const allowedOrigins = ['http://localhost:3000', 'https://virusfreee.netlify.app'];
+app.use(cors({
+  origin: function(origin, callback) {
+    // allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.indexOf(origin) === -1) {
+      const msg = 'The CORS policy for this site does not allow access from the specified origin.';
+      return callback(new Error(msg), false);
     }
+    return callback(null, true);
   }
-};
+}));
+
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -28,7 +30,6 @@ app.set('view engine', 'jade');
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-app.use(cors(corsOptions));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
