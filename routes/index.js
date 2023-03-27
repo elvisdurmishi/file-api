@@ -55,7 +55,7 @@ router.post('/file/analyse', function (req, res) {
 })
 
 router.post('/url', function (req, res) {
-    var url = req.body.url;
+    const url = req.body.url;
     axios
         .get(`https://www.virustotal.com/api/v3/domains/${url}`, {
             headers: {
@@ -65,8 +65,8 @@ router.post('/url', function (req, res) {
         .then(result => {
             res.send(result.data.data);
         })
-        .catch(error => {
-            res.status(500).send(error.data.data);
+        .catch(() => {
+            res.status(500).send({message: `${url} - This url does not exist.`});
         });
 });
 
