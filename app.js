@@ -9,7 +9,7 @@ let indexRouter = require('./routes/index');
 
 let app = express();
 
-const allowedOrigins = ['http://localhost:3000', 'https://virusfreee.netlify.app'];
+const allowedOrigins = ['http://localhost:3000', 'https://virusfreee.netlify.app', 'https://virusfree.codebyelvis.com/'];
 app.use(cors({
   origin: function(origin, callback) {
     // allow requests with no origin (like mobile apps or curl requests)

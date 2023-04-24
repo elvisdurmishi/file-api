@@ -66,7 +66,7 @@ router.post('/url', function (req, res) {
             res.send(result.data.data);
         })
         .catch(() => {
-            res.status(500).send({message: `${url} - This url does not exist.`});
+            res.status(500).send({error: `${url} - This url does not exist.`});
         });
 });
 
